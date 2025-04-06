@@ -4,6 +4,8 @@ using Mutagen.Bethesda.FormKeys.SkyrimSE;
 using Mutagen.Bethesda.Synthesis;
 using Mutagen.Bethesda.Skyrim;
 using functions;
+using Mutagen.Bethesda.Plugins.Records;
+using Mutagen.Bethesda.Plugins.Cache;
 
 namespace YahisWeaponOverhaul
 {
@@ -19,6 +21,14 @@ namespace YahisWeaponOverhaul
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
         public static void RunPatch(IPatcherState<ISkyrimMod, ISkyrimModGetter> state)
         {
+            string targetEditorID = "fWeaponTwoHandedAnimationSpeedMult";
+            float speed = 1.5f;
+            if (state.LinkCache.TryResolve<IGameSettingFloatGetter>(targetEditorID, out var gameSetting))
+            {
+                Console.WriteLine($"Found the setting! {gameSetting.EditorID}");
+                speed = gameSetting.Data != null ? (float)gameSetting.Data : speed;
+            }
+
             state.PatchMod.Weapons.Set(state.LoadOrder.PriorityOrder.Weapon().WinningOverrides()
                     .Where(w => w.HasKeyword(Skyrim.Keyword.WeapTypeGreatsword) && w.Data != null && (w.Data.Speed == 0.75f || w.Data.Speed == 0.7f))
                     .Select(w => w.DeepCopy())
@@ -31,14 +41,14 @@ namespace YahisWeaponOverhaul
                     .Select(w => w.DeepCopy())
                     .Do(w =>
                     {
-                        w.BasicStats.Damage = (ushort)Math.Round((w.BasicStats.Damage - 1) * 9f / 7f);
+                        w.BasicStats.Damage = (ushort)Math.Round((w.BasicStats.Damage - 1) * 9f / 7f * (1.5f / speed));
                     }));
             state.PatchMod.Weapons.Set(state.LoadOrder.PriorityOrder.Weapon().WinningOverrides()
                     .Where(w => w.HasKeyword(Skyrim.Keyword.WeapTypeWarhammer) && w.BasicStats != null)
                     .Select(w => w.DeepCopy())
                     .Do(w =>
                     {
-                        w.BasicStats.Damage = (ushort)Math.Round((w.BasicStats.Damage - 3) * 5f / 3f);
+                        w.BasicStats.Damage = (ushort)Math.Round((w.BasicStats.Damage - 3) * 5f / 3f * (1.5f / speed));
                     }));
 
             state.PatchMod.Weapons.Set(state.LoadOrder.PriorityOrder.Weapon().WinningOverrides()
@@ -46,7 +56,7 @@ namespace YahisWeaponOverhaul
                     .Select(w => w.DeepCopy())
                     .Do(w =>
                     {
-                        w.BasicStats.Damage = (ushort)Math.Round((w.BasicStats.Damage - 1) * 11f / 9f);
+                        w.BasicStats.Damage = (ushort)Math.Round((w.BasicStats.Damage - 1) * 11f / 9f * (1.5f / speed));
                     }));
             state.PatchMod.Weapons.Set(state.LoadOrder.PriorityOrder.Weapon().WinningOverrides()
                     .Where(w => w.HasKeyword(Skyrim.Keyword.WeapTypeMace) && w.BasicStats != null)
